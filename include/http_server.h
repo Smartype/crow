@@ -22,8 +22,8 @@ namespace crow
     class Server
     {
     public:
-        Server(Handler* handler, uint16_t port, std::tuple<Middlewares...>* middlewares = nullptr, uint16_t concurrency = 1)
-            : acceptor_(io_service_, tcp::endpoint(asio::ip::address(), port)), 
+        Server(Handler* handler, const std::string& ip, uint16_t port, std::tuple<Middlewares...>* middlewares = nullptr, uint16_t concurrency = 1)
+            : acceptor_(io_service_, tcp::endpoint(asio::ip::address::from_string(ip), port)), 
             signals_(io_service_, SIGINT, SIGTERM),
             handler_(handler), 
             concurrency_(concurrency),

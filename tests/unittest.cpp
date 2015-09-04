@@ -382,7 +382,7 @@ TEST(server_handling_error_request)
     static char buf[2048];
     SimpleApp app;
     CROW_ROUTE(app, "/")([]{return "A";});
-    Server<SimpleApp> server(&app, 45451);
+    Server<SimpleApp> server(&app, "127.0.0.1", 45451);
     auto _ = async(launch::async, [&]{server.run();});
     std::string sendmsg = "POX";
     asio::io_service is;
@@ -413,8 +413,8 @@ TEST(multi_server)
     CROW_ROUTE(app1, "/").methods("GET"_method, "POST"_method)([]{return "A";});
     CROW_ROUTE(app2, "/").methods("GET"_method, "POST"_method)([]{return "B";});
 
-    Server<SimpleApp> server1(&app1, 45451);
-    Server<SimpleApp> server2(&app2, 45452);
+    Server<SimpleApp> server1(&app1, "127.0.0.1", 45451);
+    Server<SimpleApp> server2(&app2, "127.0.0.1", 45452);
 
     auto _ = async(launch::async, [&]{server1.run();});
     auto _2 = async(launch::async, [&]{server2.run();});
@@ -684,7 +684,7 @@ struct NullSimpleMiddleware
 TEST(middleware_simple)
 {
     App<NullMiddleware, NullSimpleMiddleware> app;
-    decltype(app)::server_t server(&app, 45451);
+    decltype(app)::server_t server(&app, "127.0.0.1", 45451);
     CROW_ROUTE(app, "/")([&](const crow::request& req)
     {
         app.get_context<NullMiddleware>(req);
@@ -799,7 +799,7 @@ TEST(middleware_context)
         return "";
     });
 
-    decltype(app)::server_t server(&app, 45451);
+    decltype(app)::server_t server(&app, "127.0.0.1", 45451);
     auto _ = async(launch::async, [&]{server.run();});
     std::string sendmsg = "GET /\r\n\r\n";
     asio::io_service is;
@@ -865,7 +865,7 @@ TEST(middleware_cookieparser)
         return "";
     });
 
-    decltype(app)::server_t server(&app, 45451);
+    decltype(app)::server_t server(&app, "127.0.0.1", 45451);
     auto _ = async(launch::async, [&]{server.run();});
     std::string sendmsg = "GET /\r\nCookie: key1=value1; key2=\"val\\\"ue2\"\r\n\r\n";
     asio::io_service is;
@@ -895,7 +895,7 @@ TEST(bug_quick_repeated_request)
         return "hello";
     });
 
-    decltype(app)::server_t server(&app, 45451);
+    decltype(app)::server_t server(&app, "127.0.0.1", 45451);
     auto _ = async(launch::async, [&]{server.run();});
     std::string sendmsg = "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n";
     asio::io_service is;
@@ -939,7 +939,7 @@ TEST(simple_url_params)
 
     ///params?h=1&foo=bar&lol&count[]=1&count[]=4&pew=5.2
 
-    decltype(app)::server_t server(&app, 45451);
+    decltype(app)::server_t server(&app, "127.0.0.1", 45451);
     auto _ = async(launch::async, [&]{server.run();});
     asio::io_service is;
     std::string sendmsg;

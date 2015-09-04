@@ -58,6 +58,12 @@ namespace crow
             return *this;
         }
 
+        self_t& ip(std::string& ip)
+        {
+            ip_ = ip;
+            return *this;
+        }
+
         self_t& multithreaded()
         {
             return concurrency(std::thread::hardware_concurrency());
@@ -79,7 +85,7 @@ namespace crow
         void run()
         {
             validate();
-            server_t server(this, port_, &middlewares_, concurrency_);
+            server_t server(this, ip_, port_, &middlewares_, concurrency_);
             server.run();
         }
 
@@ -106,6 +112,7 @@ namespace crow
         }
 
     private:
+        std::string ip_ = "127.0.0.1";
         uint16_t port_ = 80;
         uint16_t concurrency_ = 1;
 
