@@ -36,22 +36,31 @@ namespace crow
             if (res.code != 404)
                 return;
 
-            // TODO: check if file outside of document_root
-            path filename{document_root};
-            // ignore url params
-            filename /= req.url;
+            // reject relative path
+            path urlpath{req.url};
+            for (auto& part : urlpath) {
+                static const path parent_dir{".."};
+                if (part == parent_dir) {
+                    res.code = 403;
+                    return;
+                }
+            }
 
+            path filename{document_root};
+            filename /= urlpath;
             CROW_LOG_DEBUG << "filename: " << filename.string();
 
             file_status s = status(filename);
             if (is_directory(s))
             {
-                if (req.raw_url.back() != '/') 
+                // it's a directory, check if ends with /, or redirect
+                if (req.url.back() != '/')
                 {
-                    CROW_LOG_DEBUG << "directory without tail /, redirect with 301";
                     res.code = 301;
                     res.body.clear();
-                    res.set_header("Location", req.raw_url + '/');
+                    const char* url = req.raw_url.c_str();
+                    const char* qstr = url + strcspn(url, "?#");
+                    res.set_header("Location", req.url + '/' + qstr);
                     return;
                 }
 
